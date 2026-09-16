@@ -1,0 +1,2512 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>車両情報検索（非公開版）</title>
+
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon"
+        type="image/png"
+        href="./icons/icon-192.png">
+  <link rel="apple-touch-icon"
+        href="./icons/icon-192.png">
+
+  <style>
+    :root {
+      --fg: #0b132b;
+      --muted: #6b7280;
+      --bg: #f3f5f7;
+      --brand: #2563eb;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        "Hiragino Kaku Gothic ProN",
+        Meiryo,
+        "Noto Sans JP",
+        sans-serif;
+
+      color: var(--fg);
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 16px 8px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 27px;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card {
+      position: relative;
+
+      margin: 12px auto 24px;
+
+      width: min(720px, calc(100% - 24px));
+
+      background: #fff;
+
+      border-radius: 16px;
+
+      box-shadow:
+        0 6px 24px rgba(2, 6, 23, .08);
+
+      padding: 20px;
+      padding-bottom: 68px;
+
+      box-sizing: border-box;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+
+      font-size: 16px;
+      color: var(--muted);
+
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+
+      font-size: 23px;
+
+      padding: 14px 16px;
+
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+
+      box-sizing: border-box;
+
+      display: block;
+
+      background: #fff;
+    }
+
+    input[type="text"]:focus {
+      outline: 2px solid rgba(37, 99, 235, .20);
+      border-color: #93c5fd;
+    }
+
+    button {
+      appearance: none;
+
+      border: 0;
+      border-radius: 12px;
+
+      padding: 14px 18px;
+
+      font-size: 18px;
+
+      width: 100%;
+
+      box-sizing: border-box;
+
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .btn {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .secondary-btn {
+      background: #eef2f7;
+      color: #374151;
+    }
+
+    .choice-btn {
+      background: #f8fafc;
+      color: #1f2937;
+
+      border: 1px solid #dbe3ec;
+
+      text-align: left;
+    }
+
+    .choice-btn:active {
+      background: #e5edf8;
+    }
+
+    .creator {
+      position: absolute;
+
+      right: 16px;
+      bottom: 14px;
+
+      display: flex;
+      align-items: center;
+
+      gap: 6px;
+
+      color: #00C600;
+
+      font-size: 12px;
+
+      font-family:
+        Arial Black,
+        Arial,
+        sans-serif;
+
+      font-weight: 900;
+
+      letter-spacing: .04em;
+
+      pointer-events: none;
+    }
+
+    .creator-icon {
+      width: 24px;
+      height: 24px;
+
+      object-fit: contain;
+
+      border-radius: 6px;
+    }
+
+    .search-info {
+      margin-top: 10px;
+
+      color: #6b7280;
+
+      font-size: 14px;
+
+      line-height: 1.5;
+    }
+
+    .message {
+      margin-top: 14px;
+
+      padding: 14px;
+
+      border-radius: 12px;
+
+      background: #fff7ed;
+
+      color: #9a3412;
+
+      font-size: 16px;
+
+      line-height: 1.6;
+    }
+
+    .result-table {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      table-layout: fixed;
+    }
+
+    .result-table th,
+    .result-table td {
+      border: 1px solid #e5e7eb;
+
+      padding: 10px 9px;
+
+      vertical-align: top;
+
+      text-align: left;
+
+      font-size: 15px;
+    }
+
+    .result-table th {
+      width: 38%;
+
+      background: #f8fafc;
+
+      color: #475569;
+
+      font-weight: 600;
+    }
+
+    .result-table td {
+      white-space: pre-line;
+
+      overflow-wrap: anywhere;
+
+      word-break: break-word;
+    }
+
+    .reason {
+      margin-top: 14px;
+
+      padding: 14px;
+
+      border-radius: 12px;
+
+      background: #f8fafc;
+
+      color: #374151;
+
+      font-size: 14px;
+
+      line-height: 1.7;
+    }
+
+    .reason strong {
+      color: #111827;
+    }
+
+    .agreement-title,
+    .install-title {
+      margin: 0 0 16px;
+
+      font-size: 23px;
+
+      text-align: center;
+    }
+
+    .agreement-text,
+    .install-text {
+      margin: 0;
+
+      font-size: 15px;
+
+      line-height: 1.8;
+
+      color: #374151;
+    }
+
+    .agreement-check {
+      display: flex;
+
+      align-items: flex-start;
+
+      gap: 10px;
+
+      margin-top: 18px;
+
+      color: #111827;
+
+      font-size: 16px;
+
+      line-height: 1.5;
+
+      cursor: pointer;
+    }
+
+    .agreement-check input {
+      flex: 0 0 auto;
+
+      width: 22px;
+      height: 22px;
+
+      margin: 2px 0 0;
+    }
+
+    .install-help {
+      margin-top: 16px;
+
+      padding: 14px;
+
+      border-radius: 12px;
+
+      background: #f8fafc;
+
+      color: #475569;
+
+      font-size: 14px;
+
+      line-height: 1.7;
+    }
+
+    .choice-title {
+      margin: 0 0 8px;
+
+      font-size: 22px;
+    }
+
+    .choice-note {
+      margin: 0 0 16px;
+
+      color: #6b7280;
+
+      font-size: 14px;
+
+      line-height: 1.6;
+    }
+
+    .choice-list {
+      display: grid;
+
+      gap: 10px;
+    }
+
+    .toast {
+      position: fixed;
+
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+
+      display: none;
+
+      background: #111827;
+
+      color: #fff;
+
+      border-radius: 12px;
+
+      padding: 12px 14px;
+
+      font-size: 16px;
+
+      text-align: center;
+
+      cursor: pointer;
+
+      z-index: 1000;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    @media (max-width: 480px) {
+
+      .card {
+        padding: 16px;
+        padding-bottom: 64px;
+      }
+
+      .result-table th {
+        width: 35%;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <header>
+    <h1>車両情報検索（非公開版）</h1>
+  </header>
+
+  <main>
+
+    <!-- =========================================
+         インストール案内
+         ========================================= -->
+
+    <section
+      id="installStep"
+      class="card hidden"
+    >
+
+      <h2 class="install-title">
+        ホーム画面への追加
+      </h2>
+
+      <p class="install-text">
+        このアプリは、スマートフォンのホーム画面に追加して
+        アプリとして利用できます。
+        <br>
+        ホーム画面に追加すると、次回からすぐに起動できます。
+      </p>
+
+      <div
+        class="grid"
+        style="margin-top:18px;"
+      >
+
+        <button
+          id="installButton"
+          class="btn"
+        >
+          ホーム画面に追加・インストール
+        </button>
+
+        <button
+          id="browserButton"
+          class="secondary-btn"
+        >
+          今はブラウザで利用する
+        </button>
+
+      </div>
+
+      <div
+        id="iosInstallHelp"
+        class="install-help hidden"
+      >
+        iPhone・iPadをご利用の場合は、
+        Safariの「共有」ボタンから
+        「ホーム画面に追加」を選択してください。
+      </div>
+
+      <div class="creator">
+        <img
+          src="./icons/proscome-icon.png"
+          alt=""
+          class="creator-icon"
+        >
+        <span>PROSCOME</span>
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         同意画面
+         ========================================= -->
+
+    <section
+      id="agreementStep"
+      class="card hidden"
+    >
+
+      <h2 class="agreement-title">
+        ご利用前の確認
+      </h2>
+
+      <p class="agreement-text">
+
+        本アプリに表示される検索結果は、
+        登録されている情報をもとに提供される参考情報です。
+        検索結果の正確性、完全性および最新性を保証するものではありません。
+
+        <br><br>
+
+        本アプリの検索結果をご利用いただいたこと、
+        またはご利用いただけなかったことに起因して発生した
+        いかなる損害、事故、トラブル等についても、
+        当方は一切の責任を負いかねます。
+
+        <br><br>
+
+        上記をご確認いただき、内容に同意いただける場合は、
+        下記のチェック欄にチェックを入れてから
+        「同意して利用開始」ボタンを押してください。
+
+      </p>
+
+      <label
+        class="agreement-check"
+        for="agreementCheck"
+      >
+
+        <input
+          id="agreementCheck"
+          type="checkbox"
+        >
+
+        <span>
+          上記の内容を確認し、同意します。
+        </span>
+
+      </label>
+
+      <div style="margin-top:18px;">
+
+        <button
+          id="agreementButton"
+          class="btn"
+          disabled
+        >
+          同意して利用開始
+        </button>
+
+      </div>
+
+      <div class="creator">
+        <img
+          src="./icons/proscome-icon.png"
+          alt=""
+          class="creator-icon"
+        >
+        <span>PROSCOME</span>
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         型式入力・結果画面
+         ========================================= -->
+
+    <section
+      id="modelStep"
+      class="card hidden"
+    >
+
+      <div class="grid">
+
+        <div>
+
+          <label for="modelInput">
+            型式（排ガス記号を含む）
+          </label>
+
+          <input
+            id="modelInput"
+            type="text"
+            autocomplete="off"
+            placeholder="例：2RG-FRR90"
+          >
+
+        </div>
+
+        <button
+          id="searchButton"
+          class="btn"
+        >
+          検索
+        </button>
+
+        <button
+          id="clearButton"
+          class="secondary-btn"
+        >
+          入力をクリア
+        </button>
+
+      </div>
+
+
+      <!-- 入力途中の参考情報 -->
+
+      <div
+        id="prefixInfo"
+        class="search-info hidden"
+      ></div>
+
+
+      <!-- エラーメッセージ -->
+
+      <div
+        id="message"
+        class="message hidden"
+      ></div>
+
+
+      <!-- 検索結果 -->
+
+      <div
+        id="result"
+        class="hidden"
+        style="margin-top:16px;"
+      ></div>
+
+
+      <div class="creator">
+        <img
+          src="./icons/proscome-icon.png"
+          alt=""
+          class="creator-icon"
+        >
+        <span>PROSCOME</span>
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         メーカー選択画面
+         ========================================= -->
+
+    <section
+      id="manufacturerStep"
+      class="card hidden"
+    >
+
+      <h2 class="choice-title">
+        メーカーを選択してください
+      </h2>
+
+      <p
+        id="choiceNote"
+        class="choice-note"
+      ></p>
+
+      <div
+        id="choiceList"
+        class="choice-list"
+      ></div>
+
+      <button
+        id="choiceBackButton"
+        class="secondary-btn"
+        style="margin-top:12px;"
+      >
+        型式入力に戻る
+      </button>
+
+      <div class="creator">
+        <img
+          src="./icons/proscome-icon.png"
+          alt=""
+          class="creator-icon"
+        >
+        <span>PROSCOME</span>
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<div
+  id="toast"
+  class="toast"
+></div>
+
+
+<script>
+
+/* ==========================================
+   定数
+   ========================================== */
+
+const AGREEMENT_KEY =
+  "vehicleInfoAgreementVersion";
+
+const AGREEMENT_VERSION =
+  "v1";
+
+
+/* ==========================================
+   DOM
+   ========================================== */
+
+const installStep =
+  document.getElementById("installStep");
+
+const agreementStep =
+  document.getElementById("agreementStep");
+
+const modelStep =
+  document.getElementById("modelStep");
+
+const manufacturerStep =
+  document.getElementById("manufacturerStep");
+
+const installButton =
+  document.getElementById("installButton");
+
+const browserButton =
+  document.getElementById("browserButton");
+
+const iosInstallHelp =
+  document.getElementById("iosInstallHelp");
+
+const agreementCheck =
+  document.getElementById("agreementCheck");
+
+const agreementButton =
+  document.getElementById("agreementButton");
+
+const modelInput =
+  document.getElementById("modelInput");
+
+const searchButton =
+  document.getElementById("searchButton");
+
+const clearButton =
+  document.getElementById("clearButton");
+
+const prefixInfo =
+  document.getElementById("prefixInfo");
+
+const message =
+  document.getElementById("message");
+
+const result =
+  document.getElementById("result");
+
+const choiceNote =
+  document.getElementById("choiceNote");
+
+const choiceList =
+  document.getElementById("choiceList");
+
+const choiceBackButton =
+  document.getElementById("choiceBackButton");
+
+const toast =
+  document.getElementById("toast");
+
+
+/* ==========================================
+   データ
+   ========================================== */
+
+let vehicles = [];
+
+let deferredPrompt = null;
+
+let pendingModel = "";
+
+let pendingGroups = [];
+
+
+/* ==========================================
+   フォーカス
+   ========================================== */
+
+function focusLater(element) {
+
+  setTimeout(() => {
+
+    element.focus();
+
+    try {
+
+      const length =
+        element.value.length;
+
+      element.setSelectionRange(
+        length,
+        length
+      );
+
+    } catch (_) {}
+
+  }, 150);
+
+}
+
+
+/* ==========================================
+   型式入力正規化
+   ========================================== */
+
+function normalizeModelInput(value) {
+
+  return String(value ?? "")
+    .normalize("NFKC")
+    .replace(/　/g, "")
+    .trim();
+
+}
+
+
+/* ==========================================
+   メーカー名
+   VBA準拠
+   ========================================== */
+
+function canonicalManufacturer(value) {
+
+  const s =
+    String(value ?? "")
+      .normalize("NFKC")
+      .trim();
+
+  switch (s) {
+
+    case "いすず":
+      return "いすゞ";
+
+    case "ふそう":
+    case "三菱":
+      return "三菱ふそう";
+
+    case "ＵＤトラックス":
+    case "UDトラックス":
+    case "日産ディーゼル":
+    case "ニッサンディーゼル":
+    case "ＵＤ":
+    case "UD":
+      return "ＵＤ";
+
+    case "ニッサン":
+    case "日産":
+      return "日産自動車";
+
+    default:
+      return s;
+  }
+
+}
+
+
+/* ==========================================
+   JSONの型式パターン
+   ========================================== */
+
+function patternOf(vehicle) {
+
+  return String(vehicle.emission ?? "")
+       + "-"
+       + String(vehicle.model ?? "");
+
+}
+
+
+/* ==========================================
+   6項目の結果比較
+   ========================================== */
+
+function signatureOf(vehicle) {
+
+  return [
+    vehicle.speedSignal,
+    vehicle.speedPulse,
+    vehicle.speedLocation,
+    vehicle.engineSignal,
+    vehicle.enginePulse,
+    vehicle.engineLocation
+  ]
+  .map(value => String(value ?? ""))
+  .join("\u0001");
+
+}
+
+
+/* ==========================================
+   VBA Like
+   ========================================== */
+
+function vbaLike(value, pattern) {
+
+  const text =
+    String(value ?? "");
+
+  const pat =
+    String(pattern ?? "");
+
+  let regex = "";
+
+  let i = 0;
+
+  while (i < pat.length) {
+
+    const ch =
+      pat[i];
+
+    if (ch === "*") {
+
+      regex += ".*";
+
+    }
+
+    else if (ch === "?") {
+
+      regex += ".";
+
+    }
+
+    else if (ch === "#") {
+
+      regex += "\\d";
+
+    }
+
+    else if (ch === "[") {
+
+      const close =
+        pat.indexOf("]", i + 1);
+
+      if (close !== -1) {
+
+        let content =
+          pat.slice(i + 1, close);
+
+        if (content.startsWith("!")) {
+
+          content =
+            "^" + content.slice(1);
+
+        }
+
+        regex +=
+          "[" + content + "]";
+
+        i = close;
+
+      }
+
+      else {
+
+        regex += "\\[";
+
+      }
+
+    }
+
+    else {
+
+      regex +=
+        ch.replace(
+          /[\\^$.*+?()[\]{}|]/g,
+          "\\$&"
+        );
+
+    }
+
+    i++;
+
+  }
+
+  try {
+
+    return new RegExp(
+      "^" + regex + "$",
+      "i"
+    ).test(text);
+
+  }
+
+  catch (_) {
+
+    return false;
+
+  }
+
+}
+
+
+/* ==========================================
+   入力途中の候補判定
+   ========================================== */
+
+function patternCanMatchPrefix(
+  prefix,
+  pattern
+) {
+
+  const p =
+    String(prefix ?? "");
+
+  const q =
+    String(pattern ?? "");
+
+  const memo =
+    new Map();
+
+
+  function dfs(i, j) {
+
+    const key =
+      i + "," + j;
+
+    if (memo.has(key)) {
+
+      return memo.get(key);
+
+    }
+
+
+    let answer = false;
+
+
+    /*
+      入力を全部使い切った場合、
+
+      パターンの残りがあっても
+      後から入力を続ければよいので
+      「候補あり」とする。
+    */
+
+    if (j === p.length) {
+
+      answer = true;
+
+    }
+
+    else if (i === q.length) {
+
+      answer = false;
+
+    }
+
+    else {
+
+      const c = q[i];
+
+
+      if (c === "*") {
+
+        answer =
+          dfs(i + 1, j) ||
+          dfs(i, j + 1);
+
+      }
+
+      else if (c === "?") {
+
+        answer =
+          dfs(i + 1, j + 1);
+
+      }
+
+      else if (c === "#") {
+
+        answer =
+          /[0-9]/.test(p[j]) &&
+          dfs(i + 1, j + 1);
+
+      }
+
+      else if (c === "[") {
+
+        const close =
+          q.indexOf("]", i + 1);
+
+        if (close >= 0) {
+
+          let chars =
+            q.slice(i + 1, close);
+
+          let negative =
+            chars.startsWith("!");
+
+          if (negative) {
+
+            chars =
+              chars.slice(1);
+
+          }
+
+          const current =
+            p[j];
+
+          const ok =
+            negative
+              ? !chars.includes(current)
+              : chars.includes(current);
+
+          answer =
+            ok &&
+            dfs(close + 1, j + 1);
+
+        }
+
+      }
+
+      else {
+
+        answer =
+          c.toLowerCase() ===
+          p[j].toLowerCase() &&
+          dfs(i + 1, j + 1);
+
+      }
+
+    }
+
+
+    memo.set(key, answer);
+
+    return answer;
+
+  }
+
+
+  return dfs(0, 0);
+
+}
+
+
+/* ==========================================
+   入力途中の候補
+   ========================================== */
+
+function provisionalCandidates(model) {
+
+  const value =
+    normalizeModelInput(model);
+
+  if (!value) {
+
+    return [];
+
+  }
+
+  return vehicles.filter(
+    vehicle =>
+      patternCanMatchPrefix(
+        value,
+        patternOf(vehicle)
+      )
+  );
+
+}
+
+
+/* ==========================================
+   最終一致
+   ========================================== */
+
+function patternSpecificity(pattern) {
+
+  const pat = String(pattern ?? "");
+
+  let fixedChars = 0;
+  let wildcardCount = 0;
+  let classCount = 0;
+
+  for (let i = 0; i < pat.length; i++) {
+    const c = pat[i];
+
+    if (c === "*") {
+      wildcardCount++;
+    }
+    else if (c === "?" || c === "#") {
+      wildcardCount++;
+    }
+    else if (c === "[") {
+      classCount++;
+      const close = pat.indexOf("]", i + 1);
+      if (close >= 0) i = close;
+    }
+    else {
+      fixedChars++;
+    }
+  }
+
+  return fixedChars * 100 - wildcardCount * 20 - classCount * 10;
+}
+
+
+function exactMatches(model) {
+
+  let kata = normalizeModelInput(model);
+
+  if (kata === "不明" || kata === "") {
+    kata = "-";
+  }
+
+  /*
+    まず「一致したパターン」の中から、
+    最も具体的なパターンを探す。
+
+    重要：メーカーごとに最も具体的なものを残すのではなく、
+    全メーカーを通して最も具体的な一致だけを最終候補にする。
+
+    例えば
+      A社 : FRR90-*
+      B社 : *-*
+      C社 : FRR90E4-*
+
+    のような場合、入力が FRR90E4-xxxx なら、
+    *-* までメーカー候補に残してしまうと
+    「実質的な一致」ではないメーカーが増えてしまう。
+
+    そこで、最も具体的なパターンの一致だけを残す。
+    同じ具体性のパターンが複数メーカーに存在する場合は、
+    その複数メーカーを正規の候補として扱う。
+  */
+  let bestSpecificity = -Infinity;
+  const bestCandidates = [];
+
+  for (const vehicle of vehicles) {
+    const pattern = patternOf(vehicle);
+
+    if (!vbaLike(kata, pattern)) {
+      continue;
+    }
+
+    const specificity = patternSpecificity(pattern);
+
+    if (specificity > bestSpecificity) {
+      bestSpecificity = specificity;
+      bestCandidates.length = 0;
+    }
+
+    if (specificity === bestSpecificity) {
+      bestCandidates.push({
+        manufacturer: canonicalManufacturer(vehicle.manufacturer),
+        vehicle,
+        pattern,
+        signature: signatureOf(vehicle),
+        specificity
+      });
+    }
+  }
+
+  /* 同一メーカーで同じ具体性のレコードが複数ある場合は
+     JSONの先頭側を採用し、メーカーを重複させない。 */
+  const bestByManufacturer = new Map();
+
+  for (const candidate of bestCandidates) {
+    if (!bestByManufacturer.has(candidate.manufacturer)) {
+      bestByManufacturer.set(candidate.manufacturer, candidate);
+    }
+  }
+
+  return [...bestByManufacturer.values()];
+}
+
+
+/* ==========================================
+   画面制御
+   ========================================== */
+
+function hideAllSteps() {
+
+  installStep.classList.add(
+    "hidden"
+  );
+
+  agreementStep.classList.add(
+    "hidden"
+  );
+
+  modelStep.classList.add(
+    "hidden"
+  );
+
+  manufacturerStep.classList.add(
+    "hidden"
+  );
+
+}
+
+
+function showInstallStep() {
+
+  hideAllSteps();
+
+  installStep.classList.remove(
+    "hidden"
+  );
+
+
+  if (isIOS()) {
+
+    iosInstallHelp.classList.remove(
+      "hidden"
+    );
+
+  }
+
+  else {
+
+    iosInstallHelp.classList.add(
+      "hidden"
+    );
+
+  }
+
+}
+
+
+function showAgreementStep() {
+
+  hideAllSteps();
+
+  agreementStep.classList.remove(
+    "hidden"
+  );
+
+
+  agreementCheck.checked =
+    false;
+
+  agreementButton.disabled =
+    true;
+
+}
+
+
+/* ==========================================
+   型式入力画面
+   ========================================== */
+
+function showModelStep(
+  keepInput = false
+) {
+
+  hideAllSteps();
+
+  modelStep.classList.remove(
+    "hidden"
+  );
+
+
+  hideMessage();
+
+  result.innerHTML = "";
+
+  result.classList.add(
+    "hidden"
+  );
+
+
+  prefixInfo.innerHTML = "";
+
+  prefixInfo.classList.add(
+    "hidden"
+  );
+
+
+  if (!keepInput) {
+
+    modelInput.value = "";
+
+  }
+
+
+  focusLater(modelInput);
+
+}
+
+
+/* ==========================================
+   メーカー選択画面
+   ========================================== */
+
+function showManufacturerChoice(groups, inputModel) {
+  pendingModel = inputModel;
+  pendingGroups = groups;
+
+  hideAllSteps();
+  manufacturerStep.classList.remove("hidden");
+  choiceList.innerHTML = "";
+  document.querySelector("#manufacturerStep .choice-title").textContent = "メーカーを選択してください";
+  choiceNote.textContent = "該当するメーカーを選択してください。";
+
+  groups.forEach(group => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "choice-btn";
+    button.textContent = group.manufacturer;
+    button.addEventListener("click", () => {
+      showResult(group.vehicle, inputModel, group.manufacturer, group.pattern, "メーカーを選択して確定");
+    });
+    choiceList.appendChild(button);
+  });
+}
+
+function showRelaxedChoiceMode(groups, inputModel) {
+  pendingModel = inputModel;
+  pendingGroups = groups;
+
+  hideAllSteps();
+  manufacturerStep.classList.remove("hidden");
+  choiceList.innerHTML = "";
+  document.querySelector("#manufacturerStep .choice-title").textContent = "検索候補の絞り込み方法";
+  choiceNote.textContent = "メーカーから選ぶか、排ガス記号付き型式から選ぶかを選択してください。";
+
+  const byManufacturer = new Map();
+  groups.forEach(group => {
+    if (!byManufacturer.has(group.manufacturer)) byManufacturer.set(group.manufacturer, []);
+    byManufacturer.get(group.manufacturer).push(group);
+  });
+
+  const manufacturerButton = document.createElement("button");
+  manufacturerButton.type = "button";
+  manufacturerButton.className = "choice-btn";
+  manufacturerButton.textContent = "メーカーから選ぶ";
+  manufacturerButton.addEventListener("click", () => showRelaxedManufacturerChoice(groups, inputModel));
+  choiceList.appendChild(manufacturerButton);
+
+  const patternButton = document.createElement("button");
+  patternButton.type = "button";
+  patternButton.className = "choice-btn";
+  patternButton.textContent = "排ガス記号付き型式から選ぶ";
+  patternButton.addEventListener("click", () => showRelaxedPatternChoice(groups, inputModel));
+  choiceList.appendChild(patternButton);
+}
+
+function showRelaxedManufacturerChoice(groups, inputModel) {
+  hideAllSteps();
+  manufacturerStep.classList.remove("hidden");
+  choiceList.innerHTML = "";
+  document.querySelector("#manufacturerStep .choice-title").textContent = "メーカーを選択してください";
+  choiceNote.textContent = "メーカーを選択すると、そのメーカーの排ガス記号付き型式候補が表示されます。";
+
+  const manufacturers = [...new Set(groups.map(g => g.manufacturer))];
+  manufacturers.forEach(manufacturer => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "choice-btn";
+    button.textContent = manufacturer;
+    button.addEventListener("click", () => {
+      const selected = groups.filter(g => g.manufacturer === manufacturer);
+      showRelaxedPatternChoice(selected, inputModel, manufacturer);
+    });
+    choiceList.appendChild(button);
+  });
+}
+
+function showRelaxedPatternChoice(groups, inputModel, selectedManufacturer = "") {
+  hideAllSteps();
+  manufacturerStep.classList.remove("hidden");
+  choiceList.innerHTML = "";
+  document.querySelector("#manufacturerStep .choice-title").textContent = "排ガス記号付き型式を選択してください";
+  choiceNote.textContent = selectedManufacturer
+    ? selectedManufacturer + "の該当候補です。"
+    : "該当する排ガス記号付き型式を選択してください。";
+
+  const unique = new Map();
+  groups.forEach(group => {
+    const key = group.manufacturer + "\u0000" + group.pattern + "\u0000" + group.signature;
+    if (!unique.has(key)) unique.set(key, group);
+  });
+
+  unique.forEach(group => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "choice-btn";
+    button.textContent = selectedManufacturer ? group.pattern : group.pattern + "（" + group.manufacturer + "）";
+    button.addEventListener("click", () => {
+      showResult(group.vehicle, inputModel, group.manufacturer, group.pattern, "排ガス記号付き型式を選択して確定");
+    });
+    choiceList.appendChild(button);
+  });
+}
+
+
+
+/* ==========================================
+   結果表示
+   ========================================== */
+
+function showResult(
+  vehicle,
+  inputModel,
+  displayManufacturer,
+  matchedPattern,
+  reason
+) {
+
+  /*
+    ★重要★
+
+    メーカー選択画面を必ず隠す。
+  */
+
+  hideAllSteps();
+
+  modelStep.classList.remove(
+    "hidden"
+  );
+
+
+  // 排ガス記号なし検索で選択された場合は、
+  // 選択した型式パターンの排ガス記号を入力型式の前に戻す。
+  // 例：入力 SH1EDAG、選択 QKG-SH1* → QKG-SH1EDAG
+  let displayModel = inputModel;
+  const normalizedInput = normalizeModelInput(inputModel);
+  const normalizedPattern = normalizeModelInput(matchedPattern || "");
+  if (normalizedInput && !normalizedInput.includes("-") && normalizedPattern.includes("-")) {
+    const prefix = normalizedPattern.slice(0, normalizedPattern.indexOf("-"));
+    if (prefix && prefix !== "*") {
+      displayModel = prefix + "-" + normalizedInput;
+    }
+  }
+
+  // 入力欄は、ユーザーが入力した文字をそのまま表示する。
+  modelInput.value =
+    inputModel;
+
+
+  prefixInfo.classList.add(
+    "hidden"
+  );
+
+
+  hideMessage();
+
+
+  const fields = [
+
+    [
+      "車名",
+      displayManufacturer
+    ],
+
+    [
+      "型式",
+      String(displayModel ?? "").toUpperCase()
+    ],
+
+    [
+      "車速信号",
+      vehicle.speedSignal
+    ],
+
+    [
+      "車速パルス",
+      vehicle.speedPulse
+    ],
+
+    [
+      "車速取得場所",
+      vehicle.speedLocation
+    ],
+
+    [
+      "エンジン回転信号",
+      vehicle.engineSignal
+    ],
+
+    [
+      "エンジン回転パルス",
+      vehicle.enginePulse
+    ],
+
+    [
+      "エンジン回転取得場所",
+      vehicle.engineLocation
+    ]
+
+  ];
+
+
+  const table =
+    document.createElement(
+      "table"
+    );
+
+  table.className =
+    "result-table";
+
+
+  const tbody =
+    document.createElement(
+      "tbody"
+    );
+
+
+  fields.forEach(
+    ([label, value]) => {
+
+      const tr =
+        document.createElement(
+          "tr"
+        );
+
+      const th =
+        document.createElement(
+          "th"
+        );
+
+      const td =
+        document.createElement(
+          "td"
+        );
+
+
+      th.textContent =
+        label;
+
+      td.textContent =
+        value ?? "";
+
+
+      tr.appendChild(th);
+
+      tr.appendChild(td);
+
+      tbody.appendChild(tr);
+
+    }
+  );
+
+
+  table.appendChild(
+    tbody
+  );
+
+
+  result.innerHTML = "";
+
+  result.appendChild(
+    table
+  );
+
+
+  /*
+    判定根拠
+  */
+
+  const reasonBox =
+    document.createElement(
+      "div"
+    );
+
+  reasonBox.className =
+    "reason";
+
+
+  reasonBox.innerHTML =
+    "<strong>判定根拠</strong>"
+    + "<br>"
+    + "入力した型式：<strong>"
+    + escapeHtml(inputModel)
+    + "</strong>"
+    + "<br>"
+    + "JSONで一致した型式パターン：<strong>"
+    + escapeHtml(matchedPattern)
+    + "</strong>"
+    + "<br>"
+    + "判定："
+    + escapeHtml(reason);
+
+
+  result.appendChild(
+    reasonBox
+  );
+
+
+  result.classList.remove(
+    "hidden"
+  );
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+/* ==========================================
+   HTMLエスケープ
+   ========================================== */
+
+function escapeHtml(value) {
+
+  return String(value)
+    .replace(
+      /[&<>"']/g,
+      char => {
+
+        const table = {
+
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+
+        };
+
+        return table[char];
+
+      }
+    );
+
+}
+
+
+/* ==========================================
+   メッセージ
+   ========================================== */
+
+function showMessage(text) {
+
+  message.textContent =
+    text;
+
+  message.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+function hideMessage() {
+
+  message.textContent =
+    "";
+
+  message.classList.add(
+    "hidden"
+  );
+
+}
+
+
+/* ==========================================
+   Toast
+   ========================================== */
+
+function showToast(
+  text,
+  duration = 2500
+) {
+
+  toast.textContent =
+    text;
+
+  toast.classList.add(
+    "show"
+  );
+
+
+  clearTimeout(
+    showToast.timer
+  );
+
+
+  if (duration > 0) {
+
+    showToast.timer =
+      setTimeout(
+        () => {
+
+          toast.classList.remove(
+            "show"
+          );
+
+        },
+        duration
+      );
+
+  }
+
+}
+
+
+toast.addEventListener(
+  "click",
+  () => {
+
+    toast.classList.remove(
+      "show"
+    );
+
+  }
+);
+
+
+/* ==========================================
+   入力途中の表示
+   ========================================== */
+
+function updatePrefixInfo() {
+
+  const value =
+    normalizeModelInput(
+      modelInput.value
+    );
+
+
+  if (!value) {
+
+    prefixInfo.textContent =
+      "";
+
+    prefixInfo.classList.add(
+      "hidden"
+    );
+
+    return;
+
+  }
+
+
+  const candidates =
+    provisionalCandidates(
+      value
+    );
+
+
+  if (!candidates.length) {
+
+    prefixInfo.textContent =
+      "この入力で始まる登録型式は見つかりません。"
+      + "続きを確認してください。";
+
+    prefixInfo.classList.remove(
+      "hidden"
+    );
+
+    return;
+
+  }
+
+
+  const patterns =
+    [
+      ...new Set(
+        candidates.map(
+          patternOf
+        )
+      )
+    ];
+
+
+  let text =
+    "入力途中の候補："
+    + candidates.length
+    + "件";
+
+
+  if (patterns.length) {
+
+    text +=
+      "／型式パターン："
+      + patterns.slice(0, 8).join("、");
+
+    if (patterns.length > 8) {
+
+      text += " …";
+
+    }
+
+  }
+
+
+  prefixInfo.textContent =
+    text;
+
+  prefixInfo.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+/* ==========================================
+   最終検索
+   ========================================== */
+
+
+/* ==========================================
+   第2検索ルート：排ガス記号なし検索
+   例：FEB50 → TKG-FEB* / QKG-FEB* などを候補化
+   ========================================== */
+
+function emissionFreeModel(value) {
+  const s = normalizeModelInput(value);
+  const pos = s.indexOf("-");
+  return pos >= 0 ? s.slice(pos + 1) : s;
+}
+
+function emissionFreePattern(pattern) {
+  const s = normalizeModelInput(pattern);
+  const pos = s.indexOf("-");
+  return pos >= 0 ? s.slice(pos + 1) : s;
+}
+
+function relaxedPatternSpecificity(pattern) {
+  return patternSpecificity(emissionFreePattern(pattern));
+}
+
+function emissionFreeMatches(model) {
+  const kata = emissionFreeModel(model);
+
+  if (!kata || kata === "不明") {
+    return [];
+  }
+
+  let bestSpecificity = -Infinity;
+  const bestCandidates = [];
+
+  for (const vehicle of vehicles) {
+    const pattern = patternOf(vehicle);
+    const relaxedPattern = emissionFreePattern(pattern);
+
+    if (!vbaLike(kata, relaxedPattern)) {
+      continue;
+    }
+
+    const specificity = relaxedPatternSpecificity(pattern);
+
+    if (specificity > bestSpecificity) {
+      bestSpecificity = specificity;
+      bestCandidates.length = 0;
+    }
+
+    if (specificity === bestSpecificity) {
+      bestCandidates.push({
+        manufacturer: canonicalManufacturer(vehicle.manufacturer),
+        vehicle,
+        pattern,
+        signature: signatureOf(vehicle),
+        specificity
+      });
+    }
+  }
+
+  /*
+    排ガス記号なし検索では、排ガス記号そのものが重要な選択情報になる。
+    例えば SH1* には P-SH1*、QKG-SH1* など複数の登録があるため、
+    回答内容だけでまとめてしまうと、実際に選びたい QKG-SH1* が
+    ボタンから消えてしまう。
+    したがって、同一メーカー・同一の排ガス記号付き型式・同一回答の
+    重複だけを除去し、排ガス記号違いはすべて候補として残す。
+  */
+  const unique = new Map();
+
+  for (const candidate of bestCandidates) {
+    const key = candidate.manufacturer + "\u0000" + candidate.pattern + "\u0000" + candidate.signature;
+    if (!unique.has(key)) {
+      unique.set(key, candidate);
+    }
+  }
+
+  return [...unique.values()];
+}
+
+function executeSearchGroups(groups, inputModel, relaxedSearch = false) {
+  if (!groups.length) {
+    showMessage(
+      relaxedSearch
+        ? "排ガス記号を省略した型式に一致する登録データがありません。"
+        : "入力した型式に一致する登録データがありません。"
+    );
+
+    result.innerHTML = "";
+    result.classList.add("hidden");
+    return;
+  }
+
+  hideMessage();
+
+  if (groups.length === 1) {
+    showResult(
+      groups[0].vehicle,
+      inputModel,
+      groups[0].manufacturer,
+      groups[0].pattern,
+      relaxedSearch
+        ? "排ガス記号を省略して結果が一意に確定"
+        : "型式だけで結果が一意に確定"
+    );
+    return;
+  }
+
+  const firstSignature = groups[0].signature;
+  const sameResult = groups.every(
+    group => group.signature === firstSignature
+  );
+
+  const firstPattern = groups[0].pattern;
+  const samePattern = groups.every(
+    group => group.pattern === firstPattern
+  );
+
+  if (sameResult && samePattern) {
+    showResult(
+      groups[0].vehicle,
+      inputModel,
+      groups.map(group => group.manufacturer).join(" ／ "),
+      groups[0].pattern,
+      relaxedSearch
+        ? "排ガス記号を省略し、複数メーカーで同一結果"
+        : "複数メーカーで一致し、検索結果が同一"
+    );
+    return;
+  }
+
+  if (relaxedSearch) {
+    showRelaxedChoiceMode(groups, inputModel);
+  } else {
+    showManufacturerChoice(groups, inputModel);
+  }
+}
+
+function executeSearch() {
+  const inputModel = normalizeModelInput(modelInput.value);
+
+  if (!inputModel) {
+    showToast("型式を入力してください");
+    focusLater(modelInput);
+    return;
+  }
+
+  /* 第1ルート：従来の完全型式検索 */
+  let groups = exactMatches(inputModel);
+
+  if (groups.length) {
+    executeSearchGroups(groups, inputModel, false);
+    return;
+  }
+
+  /* 第2ルート：排ガス記号を省略した検索 */
+  groups = emissionFreeMatches(inputModel);
+
+  if (groups.length) {
+    executeSearchGroups(groups, inputModel, true);
+    return;
+  }
+
+  executeSearchGroups([], inputModel, false);
+}
+
+/* ==========================================
+   同意
+   ========================================== */
+
+agreementCheck.addEventListener(
+  "change",
+  () => {
+
+    agreementButton.disabled =
+      !agreementCheck.checked;
+
+  }
+);
+
+
+agreementButton.addEventListener(
+  "click",
+  () => {
+
+    if (!agreementCheck.checked) {
+
+      return;
+
+    }
+
+
+    localStorage.setItem(
+      AGREEMENT_KEY,
+      AGREEMENT_VERSION
+    );
+
+
+    showModelStep();
+
+  }
+);
+
+
+/* ==========================================
+   PWA判定
+   ========================================== */
+
+function isInstalledPWA() {
+
+  const standalone =
+    window.matchMedia(
+      "(display-mode: standalone)"
+    ).matches;
+
+
+  const iosStandalone =
+    window.navigator.standalone === true;
+
+
+  return (
+    standalone ||
+    iosStandalone
+  );
+
+}
+
+
+function isIOS() {
+
+  return /iphone|ipad|ipod/i.test(
+    navigator.userAgent
+  );
+
+}
+
+
+/* ==========================================
+   インストール
+   ========================================== */
+
+installButton.addEventListener(
+  "click",
+  async () => {
+
+    if (deferredPrompt) {
+
+      deferredPrompt.prompt();
+
+
+      try {
+
+        await deferredPrompt.userChoice;
+
+      }
+
+      catch (_) {}
+
+
+      deferredPrompt =
+        null;
+
+
+      showAgreementStep();
+
+      return;
+
+    }
+
+
+    if (isIOS()) {
+
+      showToast(
+        "Safariの「共有」→「ホーム画面に追加」を選択してください",
+        0
+      );
+
+      return;
+
+    }
+
+
+    showToast(
+      "ブラウザのメニューから「インストール」または「ホーム画面に追加」を選択してください",
+      0
+    );
+
+  }
+);
+
+
+browserButton.addEventListener(
+  "click",
+  () => {
+
+    showAgreementStep();
+
+  }
+);
+
+
+window.addEventListener(
+  "beforeinstallprompt",
+  event => {
+
+    event.preventDefault();
+
+    deferredPrompt =
+      event;
+
+  }
+);
+
+
+window.addEventListener(
+  "appinstalled",
+  () => {
+
+    deferredPrompt =
+      null;
+
+  }
+);
+
+
+/* ==========================================
+   型式入力
+   ========================================== */
+
+modelInput.addEventListener(
+  "input",
+  () => {
+
+    updatePrefixInfo();
+
+  }
+);
+
+
+/* ==========================================
+   Enterキー
+   ========================================== */
+
+modelInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter"
+    ) {
+
+      event.preventDefault();
+
+      executeSearch();
+
+    }
+
+  }
+);
+
+
+/* ==========================================
+   検索
+   ========================================== */
+
+searchButton.addEventListener(
+  "click",
+  () => {
+
+    executeSearch();
+
+  }
+);
+
+
+/* ==========================================
+   クリア
+   ========================================== */
+
+clearButton.addEventListener(
+  "click",
+  () => {
+
+    modelInput.value =
+      "";
+
+    hideMessage();
+
+    result.innerHTML =
+      "";
+
+    result.classList.add(
+      "hidden"
+    );
+
+    updatePrefixInfo();
+
+    focusLater(
+      modelInput
+    );
+
+  }
+);
+
+
+/* ==========================================
+   メーカー選択から戻る
+   ========================================== */
+
+choiceBackButton.addEventListener(
+  "click",
+  () => {
+
+    showModelStep(
+      true
+    );
+
+  }
+);
+
+
+/* ==========================================
+   Service Worker
+   ========================================== */
+
+if (
+  "serviceWorker" in navigator
+) {
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch(
+          error => {
+
+            console.error(
+              "Service Worker登録失敗:",
+              error
+            );
+
+          }
+        );
+
+    }
+  );
+
+}
+
+
+/* ==========================================
+   JSON読み込み
+   ========================================== */
+
+async function loadVehicleData() {
+
+  try {
+
+    const response =
+      await fetch(
+        "./vehicle.json",
+        {
+          cache: "no-cache"
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "vehicle.jsonの読み込みに失敗しました。"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+    window.vehicleJsonVersion = data?.version ?? "不明";
+
+
+    if (
+      data &&
+      Array.isArray(
+        data.vehicles
+      )
+    ) {
+
+      vehicles =
+        data.vehicles;
+
+    }
+
+    else {
+
+      throw new Error(
+        "vehicle.jsonにvehicles配列がありません。"
+      );
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.error(
+      error
+    );
+
+    showMessage(
+      "車両データを読み込めませんでした。"
+    );
+
+  }
+
+}
+
+
+/* ==========================================
+   同意済みか
+   ========================================== */
+
+function hasAgreement() {
+
+  return (
+    localStorage.getItem(
+      AGREEMENT_KEY
+    ) === AGREEMENT_VERSION
+  );
+
+}
+
+
+/* ==========================================
+   初期化
+   ========================================== */
+
+async function initialize() {
+
+  await loadVehicleData();
+
+
+  /*
+    未インストールかつ
+    未同意ならインストール案内
+  */
+
+  if (
+    !isInstalledPWA() &&
+    !hasAgreement()
+  ) {
+
+    showInstallStep();
+
+    return;
+
+  }
+
+
+  /*
+    同意していなければ
+    同意画面
+  */
+
+  if (
+    !hasAgreement()
+  ) {
+
+    showAgreementStep();
+
+    return;
+
+  }
+
+
+  /*
+    通常は型式入力画面
+  */
+
+  showModelStep();
+
+}
+
+
+initialize();
+
+</script>
+
+</body>
+</html>
